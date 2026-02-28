@@ -8,12 +8,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
+type Mode = 'signin' | 'signup' | 'confirm'
+
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  const [mode, setMode] = useState<Mode>('signin')
   const router = useRouter()
   const supabase = createClient()
 
@@ -22,16 +24,32 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
 
-    const { error } = mode === 'signin'
-      ? await supabase.auth.signInWithPassword({ email, password })
-      : await supabase.auth.signUp({ email, password })
-
-    if (error) {
-      setError(error.message)
-      setLoading(false)
+    if (mode === 'signin') {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        setError(error.message)
+        setLoading(false)
+      } else {
+        router.push('/')
+        router.refresh()
+      }
     } else {
-      router.push('/')
-      router.refresh()
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback` }
+      })
+      setLoading(false)
+      if (error) {
+        setError(error.message)
+      } else if (data.session) {
+        // Email confirmations disabled in Supabase — signed in immediately
+        router.push('/')
+        router.refresh()
+      } else {
+        // Email confirmation required — show confirmation screen
+        setMode('confirm')
+      }
     }
   }
 
@@ -39,9 +57,7 @@ export default function LoginPage() {
     setLoading(true)
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'apple',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
     })
     if (error) {
       setError(error.message)
@@ -49,6 +65,52 @@ export default function LoginPage() {
     }
   }
 
+  // ── Confirmation screen ───────────────────────────────────────────────────
+  if (mode === 'confirm') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0A0A0F] px-4">
+        <div className="w-full max-w-md space-y-6">
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center gap-2">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#0066FF] to-[#00C2A8] flex items-center justify-center">
+                <span className="text-white font-bold text-lg">P</span>
+              </div>
+              <span className="text-3xl font-bold gradient-text">PortiFi</span>
+            </div>
+          </div>
+
+          <Card className="bg-[#13131A] border-[#2C2C3E] card-glow text-center">
+            <CardHeader className="pb-2">
+              <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-[#0066FF]/10 flex items-center justify-center">
+                <svg className="w-8 h-8 text-[#0066FF]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+              </div>
+              <CardTitle className="text-white text-xl">Check your email</CardTitle>
+              <CardDescription className="text-[#8E8E93]">
+                We sent a confirmation link to
+              </CardDescription>
+              <p className="text-white font-medium mt-1">{email}</p>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-2">
+              <p className="text-[#8E8E93] text-sm">
+                Click the link in your email to activate your account. Check your spam folder if you don't see it.
+              </p>
+              <Button
+                onClick={() => setMode('signin')}
+                variant="outline"
+                className="w-full border-[#2C2C3E] text-white hover:bg-[#1C1C2E]"
+              >
+                Back to sign in
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Sign in / Sign up form ────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0A0A0F] px-4">
       <div className="w-full max-w-md space-y-6">
@@ -135,7 +197,7 @@ export default function LoginPage() {
             <p className="text-center text-sm text-[#8E8E93]">
               {mode === 'signin' ? "Don't have an account? " : 'Already have an account? '}
               <button
-                onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')}
+                onClick={() => { setMode(mode === 'signin' ? 'signup' : 'signin'); setError('') }}
                 className="text-[#0066FF] hover:underline"
               >
                 {mode === 'signin' ? 'Sign up' : 'Sign in'}
