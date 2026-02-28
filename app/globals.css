@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 4%;
+    --foreground: 0 0% 95%;
+    --card: 240 10% 8%;
+    --card-foreground: 0 0% 95%;
+    --popover: 240 10% 8%;
+    --popover-foreground: 0 0% 95%;
+    --primary: 213 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 174 100% 38%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 240 5% 18%;
+    --muted-foreground: 240 5% 55%;
+    --accent: 240 5% 18%;
+    --accent-foreground: 0 0% 95%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5% 16%;
+    --input: 240 5% 16%;
+    --ring: 213 100% 50%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    background-color: #0A0A0F;
+    color: #F2F2F7;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  }
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #0066FF, #00C2A8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.card-glow {
+  box-shadow: 0 0 0 1px rgba(0, 102, 255, 0.1), 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.positive { color: #00C2A8; }
+.negative { color: #FF453A; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2C2C3E; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3C3C4E; }
