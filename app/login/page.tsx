@@ -30,7 +30,7 @@ export default function LoginPage() {
         setError(error.message)
         setLoading(false)
       } else {
-        router.push('/')
+        router.push('/portal')
         router.refresh()
       }
     } else {
@@ -44,7 +44,7 @@ export default function LoginPage() {
         setError(error.message)
       } else if (data.session) {
         // Email confirmations disabled in Supabase — signed in immediately
-        router.push('/')
+        router.push('/portal')
         router.refresh()
       } else {
         // Email confirmation required — show confirmation screen
